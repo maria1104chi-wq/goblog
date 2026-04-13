@@ -1,0 +1,52 @@
+# 个人博客系统 - Caddy配置
+# 自动HTTPS，支持HTTP/2
+
+# 生产环境配置（替换your-domain.com为实际域名）
+your-domain.com {
+    # 自动HTTPS证书
+    tls your-email@example.com
+    
+    # 反向代理到后端
+    reverse_proxy /api/* backend:8080
+    
+    # 静态文件服务（前端构建产物）
+    root * /app/frontend/dist
+    file_server
+    
+    # 伪静态路由 - 所有非API请求都返回index.html
+    try_files {path} {path}/ /index.html
+    
+    # 安全头
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+    
+    # 日志
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+}
+
+# 开发环境配置（本地测试）
+localhost {
+    # 反向代理到后端
+    reverse_proxy /api/* backend:8080
+    
+    # 反向代理到前端开发服务器
+    reverse_proxy /* frontend:5173
+    
+    # 日志
+    log {
+        output stdout
+    }
+}
+
+# HTTP自动重定向到HTTPS
+http://your-domain.com {
+    redir https://{host}{uri} permanent
+}
