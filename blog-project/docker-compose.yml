@@ -1,0 +1,112 @@
+# 使用docker-compose运行博客系统
+version: '3.8'
+
+services:
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: blog_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: blog_db
+      MYSQL_USER: blog_user
+      MYSQL_PASSWORD: blog123
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - blog_network
+
+  # Go后端服务
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: blog_backend
+    restart: always
+    environment:
+      GIN_MODE: release
+      SERVER_PORT: 8080
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: blog_user
+      DB_PASSWORD: blog123
+      DB_NAME: blog_db
+      DB_MAX_IDLE: 10
+      DB_MAX_OPEN: 100
+      DB_MAX_LIFETIME: 3600
+      ALIYUN_SMS_ACCESS_KEY: ${ALIYUN_SMS_ACCESS_KEY:-}
+      ALIYUN_SMS_ACCESS_SECRET: ${ALIYUN_SMS_ACCESS_SECRET:-}
+      ALIYUN_SMS_SIGN_NAME: ${ALIYUN_SMS_SIGN_NAME:-我的博客}
+      ALIYUN_SMS_TEMPLATE_CODE: ${ALIYUN_SMS_TEMPLATE_CODE:-SMS_123456789}
+      JWT_SECRET: blog-jwt-secret-key-2024
+      JWT_EXPIRE_HOUR: 24
+      UPLOAD_PATH: /app/backend/static/uploads
+      MAX_IMAGE_SIZE: 5242880
+      MAX_PDF_SIZE: 10485760
+      MAX_VIDEO_SIZE: 52428800
+      ENABLE_SEO_AUTO: "true"
+      COMMENT_NEED_AUDIT: "false"
+      ALLOW_ANONYMOUS: "true"
+      HOT_ARTICLE_LIMIT: 10
+      PAGE_SIZE: 10
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/static:/app/backend/static
+      - ./backend/logs:/app/backend/logs
+    depends_on:
+      - mysql
+    networks:
+      - blog_network
+
+  # Vue前端（开发环境可选）
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: blog_frontend
+    restart: always
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080/api
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/frontend/src
+      - ./frontend/public:/app/frontend/public
+    depends_on:
+      - backend
+    networks:
+      - blog_network
+
+  # Caddy反向代理和HTTPS
+  caddy:
+    image: caddy:2-alpine
+    container_name: blog_caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+    networks:
+      - blog_network
+
+networks:
+  blog_network:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
