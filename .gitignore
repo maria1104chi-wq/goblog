@@ -3,6 +3,66 @@
 *.o
 *.a
 *.out
+*_test
+*.so
+
+# Go cache and modules
+go.sum
+!go.sum
+go.mod
+!go.mod
+vendor/
+
+# Build directories
+build/
+dist/
+
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+*.env.*
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+*.coverprofile
+
+# Docker related
+*.dockerfile
+Dockerfile*
+docker-compose*.yml
+!Dockerfile
+!docker-compose.yml
+
+# Temporary and backup files
+*.tmp
+*.bak
+*.backup
+*~
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editors and IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Database
+*.db
+*.db-journal
+
+# Sensitive files
+Sensitive.txt
 *.test
 *.prof
 *.syso
