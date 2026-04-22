@@ -63,4 +63,59 @@ Thumbs.db
 
 # Sensitive files
 Sensitive.txt
+*.test
+*.prof
+*.syso
+
+# Go cache and modules
+go.sum
+go.mod.bak
+vendor/
+
+# Build directories
+bin/
+pkg/
+target/
+
+# Dependencies
+node_modules/
+vendor/
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Cache directories
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.cargo/
+.gradle/
 ```
